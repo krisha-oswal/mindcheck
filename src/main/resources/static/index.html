@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MindCheck — Mental Wellness Journal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:#0f0f13;--card:#16161e;--card2:#1c1c27;--accent:#b48ef7;--accent2:#7fd8be;
+      --warn:#f4a261;--danger:#e76f51;--text:#e8e4f0;--muted:#888aaa;--border:#2a2a3a;--radius:16px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;padding:40px 20px 80px;}
+    body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(180,142,247,0.07) 0%,transparent 70%);pointer-events:none;}
+    header{text-align:center;margin-bottom:40px;}
+    header .tagline{font-family:'Lora',serif;font-style:italic;font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+    header h1{font-family:'Lora',serif;font-size:clamp(2rem,5vw,3rem);font-weight:600;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    header p{color:var(--muted);font-size:14px;margin-top:8px;}
+    .container{max-width:720px;margin:0 auto;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:20px;}
+    .card h2{font-family:'Lora',serif;font-size:1rem;font-weight:600;color:var(--accent);margin-bottom:16px;}
+    label{display:block;font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+    textarea{width:100%;min-height:160px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Lora',serif;font-size:15px;line-height:1.7;padding:16px;resize:vertical;outline:none;transition:border-color 0.2s;}
+    textarea:focus{border-color:var(--accent);}
+    textarea::placeholder{color:#555;font-style:italic;}
+    input[type="number"]{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;outline:none;transition:border-color 0.2s;}
+    input[type="number"]:focus{border-color:var(--accent);}
+    button.analyze-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;color:#0f0f13;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;letter-spacing:0.5px;transition:opacity 0.2s,transform 0.1s;margin-top:8px;}
+    button.analyze-btn:hover{opacity:0.9;}button.analyze-btn:active{transform:scale(0.99);}button.analyze-btn:disabled{opacity:0.5;cursor:not-allowed;}
+    #results{display:none;}
+    .result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:16px;animation:fadeUp 0.4s ease forwards;opacity:0;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+    .result-card:nth-child(1){animation-delay:0.05s;}.result-card:nth-child(2){animation-delay:0.10s;}.result-card:nth-child(3){animation-delay:0.15s;}.result-card:nth-child(4){animation-delay:0.20s;}.result-card:nth-child(5){animation-delay:0.25s;}.result-card:nth-child(6){animation-delay:0.30s;}
+    .result-card .section-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;font-weight:500;}
+    .result-card p{font-size:15px;line-height:1.7;color:#ccc8de;}
+    .emotion-bars{display:flex;flex-direction:column;gap:10px;}
+    .emotion-row{display:flex;align-items:center;gap:12px;}
+    .emotion-name{width:60px;font-size:12px;color:var(--muted);text-transform:capitalize;}
+    .bar-track{flex:1;height:8px;background:var(--card2);border-radius:99px;overflow:hidden;}
+    .bar-fill{height:100%;border-radius:99px;transition:width 0.8s ease;}
+    .bar-sadness{background:#8ab4f8;}.bar-joy{background:var(--accent2);}.bar-anger{background:var(--danger);}.bar-fear{background:var(--warn);}
+    .emotion-score{width:32px;text-align:right;font-size:12px;color:var(--muted);}
+    .stress-display{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+    .stress-circle{width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Lora',serif;flex-shrink:0;border:3px solid transparent;}
+    .stress-circle .num{font-size:22px;font-weight:600;line-height:1;}
+    .stress-circle .lbl{font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+    .stress-low{border-color:var(--accent2);color:var(--accent2);}.stress-mid{border-color:var(--warn);color:var(--warn);}.stress-high{border-color:var(--danger);color:var(--danger);}
+    .trend-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500;}
+    .trend-up{background:rgba(231,111,81,0.15);color:var(--danger);}.trend-down{background:rgba(127,216,190,0.15);color:var(--accent2);}.trend-stable{background:rgba(180,142,247,0.15);color:var(--accent);}
+    .suggestions-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+    .suggestions-list li{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:#ccc8de;line-height:1.6;}
+    .suggestions-list li .num-badge{width:22px;height:22px;background:rgba(180,142,247,0.2);color:var(--accent);border-radius:50%;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+    .support-note{border-left:3px solid var(--warn);padding-left:16px;}.support-note .section-label{color:var(--warn);}
+    .support-msg-box{background:rgba(180,142,247,0.06);border:1px solid rgba(180,142,247,0.2);border-radius:12px;padding:16px 20px;font-family:'Lora',serif;font-style:italic;font-size:15px;line-height:1.75;color:#ddd9f0;}
+    .loader{text-align:center;padding:30px;color:var(--muted);font-style:italic;font-family:'Lora',serif;font-size:14px;display:none;}
+    .loader span{display:inline-block;animation:pulse 1.4s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:1;}}
+    .error-msg{background:rgba(231,111,81,0.1);border:1px solid rgba(231,111,81,0.3);border-radius:10px;padding:14px 18px;color:var(--danger);font-size:14px;display:none;margin-bottom:16px;}
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="tagline">Daily Reflection</div>
+    <h1>MindCheck</h1>
+    <p>A gentle space to understand how you're doing today</p>
+  </header>
+  <div class="card">
+    <h2>✍️ Today's Journal Entry</h2>
+    <label for="journalText">How are you feeling? Write freely...</label>
+    <textarea id="journalText" placeholder="e.g. Today was rough. I have three exams coming up and I barely slept. I feel so overwhelmed and anxious about failing..."></textarea>
+  </div>
+  <div class="card">
+    <h2>📊 Stress History</h2>
+    <label for="prevScore">Your Previous Stress Score (0–100)</label>
+    <input type="number" id="prevScore" min="0" max="100" placeholder="e.g. 45" value="40"/>
+  </div>
+  <div class="error-msg" id="errorMsg"></div>
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">Analyse My Day →</button>
+  <div class="loader" id="loader"><span>Reading between the lines of your day…</span></div>
+  <div id="results">
+    <div class="result-card"><div class="section-label">Emotion Scores</div><div class="emotion-bars" id="emotionBars"></div></div>
+    <div class="result-card">
+      <div class="section-label">Stress Level</div>
+      <div class="stress-display">
+        <div class="stress-circle" id="stressCircle"><span class="num" id="stressNum">—</span><span class="lbl">/ 100</span></div>
+        <div><div class="trend-badge" id="trendBadge">—</div><p id="trendText" style="margin-top:8px;font-size:13px;color:var(--muted)"></p></div>
+      </div>
+    </div>
+    <div class="result-card"><div class="section-label">Emotional Insight</div><p id="insightText"></p></div>
+    <div class="result-card"><div class="section-label">Why You Might Be Feeling This Way</div><p id="whyText"></p></div>
+    <div class="result-card"><div class="section-label">A Note From MindCheck</div><div class="support-msg-box" id="supportMsg"></div></div>
+    <div class="result-card"><div class="section-label">Suggestions For Today</div><ul class="suggestions-list" id="suggestionsList"></ul></div>
+    <div class="result-card support-note" id="card-safety" style="display:none"><div class="section-label">⚠️ Support Note</div><p id="safetyText"></p></div>
+  </div>
+</div>
+<script>
+async function analyze(){
+  const text=document.getElementById('journalText').value.trim();
+  const prevScore=parseInt(document.getElementById('prevScore').value)||0;
+  const errorMsg=document.getElementById('errorMsg');
+  const loader=document.getElementById('loader');
+  const btn=document.getElementById('analyzeBtn');
+  const results=document.getElementById('results');
+  errorMsg.style.display='none';
+  if(!text||text.length<20){errorMsg.textContent='Please write at least a few sentences in your journal entry.';errorMsg.style.display='block';return;}
+  btn.disabled=true;loader.style.display='block';results.style.display='none';
+  try{
+    const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,previousStressScore:prevScore})});
+    if(!res.ok)throw new Error('Server error: '+res.status);
+    const data=await res.json();
+    renderResults(data);
+  }catch(err){
+    errorMsg.textContent='Could not connect to the server. Make sure Spring Boot is running on port 8080.';
+    errorMsg.style.display='block';
+  }finally{btn.disabled=false;loader.style.display='none';}
+}
+function renderResults(data){
+  const results=document.getElementById('results');
+  const emotions=data.emotionScores||{};
+  const emotionBars=document.getElementById('emotionBars');
+  emotionBars.innerHTML='';
+  ['sadness','joy','anger','fear'].forEach(em=>{
+    const score=emotions[em]||0;
+    emotionBars.innerHTML+=`<div class="emotion-row"><span class="emotion-name">${em}</span><div class="bar-track"><div class="bar-fill bar-${em}" style="width:${score}%"></div></div><span class="emotion-score">${score}</span></div>`;
+  });
+  const stress=data.stressScore||0;
+  document.getElementById('stressNum').textContent=stress;
+  const sc=document.getElementById('stressCircle');
+  sc.className='stress-circle '+(stress>=65?'stress-high':stress>=35?'stress-mid':'stress-low');
+  const trend=(data.trend||'').toLowerCase();
+  const tb=document.getElementById('trendBadge');
+  if(trend.includes('increasing')){tb.className='trend-badge trend-up';tb.textContent='↑ Increasing';}
+  else if(trend.includes('decreasing')){tb.className='trend-badge trend-down';tb.textContent='↓ Decreasing';}
+  else{tb.className='trend-badge trend-stable';tb.textContent='→ Stable';}
+  const parts=(data.trend||'').split('—');
+  document.getElementById('trendText').textContent=parts.length>1?parts[1].trim():'';
+  document.getElementById('insightText').textContent=data.emotionalInsight||'';
+  document.getElementById('whyText').textContent=data.why||'';
+  document.getElementById('supportMsg').textContent=data.supportMessage||'';
+  const suggList=document.getElementById('suggestionsList');
+  const suggLines=(data.suggestions||'').split('\n').filter(l=>l.trim());
+  suggList.innerHTML=suggLines.map((line,i)=>{
+    const cleaned=line.replace(/^\d+\.\s*/,'');
+    return `<li><span class="num-badge">${i+1}</span><span>${cleaned}</span></li>`;
+  }).join('');
+  const safetyCard=document.getElementById('card-safety');
+  if(data.supportNote){document.getElementById('safetyText').textContent=data.supportNote;safetyCard.style.display='block';}
+  else{safetyCard.style.display='none';}
+  results.style.display='block';
+  results.scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>
